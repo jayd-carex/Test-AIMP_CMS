@@ -27,10 +27,11 @@ export async function OPTIONS(request: Request) {
   return new NextResponse(null, { status: 204 })
 }
 
-export async function GET(req: Request, { params }: { params: { userId: string } }) {
+export async function GET(req: Request, context: { params: { userId: string } }) {
+  const { userId } = context.params
+
   try {
     const origin = req.headers.get('origin') ?? ''
-    const { userId } = params
 
     if (!userId) {
       return NextResponse.json(
@@ -96,10 +97,11 @@ export async function GET(req: Request, { params }: { params: { userId: string }
   }
 }
 
-export async function POST(req: Request, { params }: { params: { userId: string } }) {
+export async function POST(req: Request, context: { params: { userId: string } }) {
+  const { userId } = context.params
+
   try {
     const origin = req.headers.get('origin') ?? ''
-    const { userId } = params
 
     if (!userId) {
       return NextResponse.json(
