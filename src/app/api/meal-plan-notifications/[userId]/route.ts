@@ -1,6 +1,7 @@
 import { getPayload } from 'payload'
 import configPromise from '@/payload.config'
 import { NextResponse } from 'next/server'
+import { NextRequest } from 'next/server'
 
 // Define allowed origins
 const allowedOrigins = [
@@ -27,11 +28,11 @@ export async function OPTIONS(request: Request) {
   return new NextResponse(null, { status: 204 })
 }
 
-export async function GET(req: Request, { params }: { params: { userId: string } }) {
-  const { userId } = params // Correctly accessing params here
-
+export async function GET(request: NextRequest) {
   try {
-    const origin = req.headers.get('origin') ?? ''
+    const origin = request.headers.get('origin') ?? ''
+    const url = new URL(request.url)
+    const userId = url.pathname.split('/')[3] // Extract userId from URL (e.g., '/meal-plan-notifications/{userId}')
 
     if (!userId) {
       return NextResponse.json(
@@ -97,11 +98,11 @@ export async function GET(req: Request, { params }: { params: { userId: string }
   }
 }
 
-export async function POST(req: Request, { params }: { params: { userId: string } }) {
-  const { userId } = params // Correctly accessing params here
-
+export async function POST(request: NextRequest) {
   try {
-    const origin = req.headers.get('origin') ?? ''
+    const origin = request.headers.get('origin') ?? ''
+    const url = new URL(request.url)
+    const userId = url.pathname.split('/')[3] // Extract userId from URL (e.g., '/meal-plan-notifications/{userId}')
 
     if (!userId) {
       return NextResponse.json(
@@ -117,7 +118,7 @@ export async function POST(req: Request, { params }: { params: { userId: string 
       )
     }
 
-    const body = await req.json()
+    const body = await request.json()
     const { planLastGenerated, mbPlan, selectedPlan, email } = body
 
     // Validate required fields

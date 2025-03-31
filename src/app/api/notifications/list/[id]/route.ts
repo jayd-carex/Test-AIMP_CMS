@@ -18,10 +18,11 @@ export async function OPTIONS(request: Request) {
 }
 
 // Add PATCH endpoint to update read status
-export async function PATCH(req: Request, { params }: { params: { id: string } }) {
+export async function PATCH(request: Request) {
   try {
-    const origin = req.headers.get('origin') ?? ''
-    const id = await params.id // Await the id
+    const origin = request.headers.get('origin') ?? ''
+    const url = new URL(request.url) // Parse the URL to extract the `id`
+    const id = url.pathname.split('/')[4] // Extract the `id` from the URL
 
     if (!id) {
       return NextResponse.json(
@@ -37,17 +38,18 @@ export async function PATCH(req: Request, { params }: { params: { id: string } }
       )
     }
 
+    const body = await request.json()
+    const { read } = body // Get data from the request body
+
     const payload = await getPayload({
       config: configPromise,
     })
 
-    // Remove body parsing since we're just setting read to true
+    // Update the notification status to read
     const result = await payload.update({
       collection: 'notifications-list',
       id: id,
-      data: {
-        read: true,
-      },
+      data: { read: read || true }, // Set read status
     })
 
     return NextResponse.json(result, {
@@ -73,10 +75,12 @@ export async function PATCH(req: Request, { params }: { params: { id: string } }
   }
 }
 
-export async function DELETE(req: Request, { params }: { params: { id: string } }) {
+// Handle DELETE request for deleting notifications
+export async function DELETE(request: Request) {
   try {
-    const origin = req.headers.get('origin') ?? ''
-    const { id } = await params // Await the params
+    const origin = request.headers.get('origin') ?? ''
+    const url = new URL(request.url) // Parse the URL to extract the `id`
+    const id = url.pathname.split('/')[4] // Extract the `id` from the URL
 
     if (!id) {
       return NextResponse.json(

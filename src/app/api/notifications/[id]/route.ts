@@ -27,10 +27,11 @@ export async function OPTIONS(request: Request) {
   return new NextResponse(null, { status: 204 })
 }
 
-export async function DELETE(req: Request, { params }: { params: { id: string } }) {
+export async function DELETE(request: Request) {
   try {
-    const origin = req.headers.get('origin') ?? ''
-    const { id } = params
+    const origin = request.headers.get('origin') ?? ''
+    const url = new URL(request.url) // Parse the URL to get the `id` parameter
+    const id = url.pathname.split('/')[3] // Assuming the `id` is in the path like /api/notifications/{id}
 
     if (!id) {
       return NextResponse.json(
