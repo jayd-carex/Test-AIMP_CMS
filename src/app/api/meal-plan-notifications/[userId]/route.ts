@@ -27,8 +27,8 @@ export async function OPTIONS(request: Request) {
   return new NextResponse(null, { status: 204 })
 }
 
-export async function GET(req: Request, context: { params: { userId: string } }) {
-  const { userId } = context.params
+export async function GET(req: Request, { params }: { params: { userId: string } }) {
+  const { userId } = params // Correctly accessing params here
 
   try {
     const origin = req.headers.get('origin') ?? ''
@@ -97,8 +97,8 @@ export async function GET(req: Request, context: { params: { userId: string } })
   }
 }
 
-export async function POST(req: Request, context: { params: { userId: string } }) {
-  const { userId } = context.params
+export async function POST(req: Request, { params }: { params: { userId: string } }) {
+  const { userId } = params // Correctly accessing params here
 
   try {
     const origin = req.headers.get('origin') ?? ''
