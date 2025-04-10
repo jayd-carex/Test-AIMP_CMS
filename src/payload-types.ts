@@ -54,6 +54,7 @@ export type SupportedTimezones =
   | 'Asia/Singapore'
   | 'Asia/Tokyo'
   | 'Asia/Seoul'
+  | 'Australia/Brisbane'
   | 'Australia/Sydney'
   | 'Pacific/Guam'
   | 'Pacific/Noumea'
@@ -72,9 +73,15 @@ export interface Config {
     notifications: Notification;
     'notifications-list': NotificationsList;
     'meal-plan-notifications': MealPlanNotification;
+    ingredients: Ingredient;
+    'ai-prompts': AiPrompt;
     'apple-pay-transactions': ApplePayTransaction;
     'apple-product': AppleProduct;
     'apple-pay-cancel-subscription': ApplePayCancelSubscription;
+    handcrafted: Handcrafted;
+    comments: Comment;
+    posts: Post;
+    likes: Like;
     'payload-locked-documents': PayloadLockedDocument;
     'payload-preferences': PayloadPreference;
     'payload-migrations': PayloadMigration;
@@ -87,9 +94,15 @@ export interface Config {
     notifications: NotificationsSelect<false> | NotificationsSelect<true>;
     'notifications-list': NotificationsListSelect<false> | NotificationsListSelect<true>;
     'meal-plan-notifications': MealPlanNotificationsSelect<false> | MealPlanNotificationsSelect<true>;
+    ingredients: IngredientsSelect<false> | IngredientsSelect<true>;
+    'ai-prompts': AiPromptsSelect<false> | AiPromptsSelect<true>;
     'apple-pay-transactions': ApplePayTransactionsSelect<false> | ApplePayTransactionsSelect<true>;
     'apple-product': AppleProductSelect<false> | AppleProductSelect<true>;
     'apple-pay-cancel-subscription': ApplePayCancelSubscriptionSelect<false> | ApplePayCancelSubscriptionSelect<true>;
+    handcrafted: HandcraftedSelect<false> | HandcraftedSelect<true>;
+    comments: CommentsSelect<false> | CommentsSelect<true>;
+    posts: PostsSelect<false> | PostsSelect<true>;
+    likes: LikesSelect<false> | LikesSelect<true>;
     'payload-locked-documents': PayloadLockedDocumentsSelect<false> | PayloadLockedDocumentsSelect<true>;
     'payload-preferences': PayloadPreferencesSelect<false> | PayloadPreferencesSelect<true>;
     'payload-migrations': PayloadMigrationsSelect<false> | PayloadMigrationsSelect<true>;
@@ -136,6 +149,7 @@ export interface User {
   lastName: string;
   currentActivePlan?: string | null;
   planStatus?: string | null;
+  stripeCustomerID: string;
   userAvatar?: (string | null) | Media;
   lastLogin: string;
   lastAppAccess: string;
@@ -270,6 +284,51 @@ export interface MealPlanNotification {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "ingredients".
+ */
+export interface Ingredient {
+  id: string;
+  name: string;
+  category: 'protein' | 'vegetable' | 'fruit' | 'grain' | 'dairy' | 'spice' | 'oil' | 'other';
+  /**
+   * Check if this is a common cooking ingredient that can be used in any recipe
+   */
+  isCommon?: boolean | null;
+  /**
+   * Suggested substitute that aligns with Metabolic Balance guidelines
+   */
+  metabolicBalanceSubstitute?: string | null;
+  /**
+   * Brief description of the ingredient and its use in Metabolic Balance
+   */
+  description?: string | null;
+  isActive?: boolean | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "ai-prompts".
+ */
+export interface AiPrompt {
+  id: string;
+  name: string;
+  promptType: 'system' | 'user';
+  content: string;
+  /**
+   * A brief description of what this prompt is used for
+   */
+  description?: string | null;
+  isActive?: boolean | null;
+  /**
+   * Order in which this prompt should be applied (lower numbers first)
+   */
+  order?: number | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "apple-pay-transactions".
  */
 export interface ApplePayTransaction {
@@ -309,6 +368,84 @@ export interface ApplePayCancelSubscription {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "handcrafted".
+ */
+export interface Handcrafted {
+  id: string;
+  userId: string;
+  name: string;
+  ingredients: {
+    ingredient?: string | null;
+    name: string;
+    quantity: string;
+    unit: string;
+    id?: string | null;
+  }[];
+  method: {
+    step: string;
+    id?: string | null;
+  }[];
+  cookingTime: number;
+  imagePrompt?: string | null;
+  isFavourite?: boolean | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "comments".
+ */
+export interface Comment {
+  id: string;
+  content: string;
+  author: string | User;
+  post: string | Post;
+  likes?: (string | User)[] | null;
+  likesCount?: number | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "posts".
+ */
+export interface Post {
+  id: string;
+  content?: string | null;
+  author: string | User;
+  image?: (string | null) | Media;
+  likesCount?: number | null;
+  /**
+   * Likes on this post
+   */
+  likeslll?: (string | Like)[] | null;
+  commentsCount?: number | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "likes".
+ */
+export interface Like {
+  id: string;
+  /**
+   * The post that was liked
+   */
+  post: string | Post;
+  /**
+   * The user who liked the post
+   */
+  user: string | User;
+  createdAt: string;
+  /**
+   * Whether the post is currently liked
+   */
+  isLiked: boolean;
+  updatedAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "payload-locked-documents".
  */
 export interface PayloadLockedDocument {
@@ -339,6 +476,14 @@ export interface PayloadLockedDocument {
         value: string | MealPlanNotification;
       } | null)
     | ({
+        relationTo: 'ingredients';
+        value: string | Ingredient;
+      } | null)
+    | ({
+        relationTo: 'ai-prompts';
+        value: string | AiPrompt;
+      } | null)
+    | ({
         relationTo: 'apple-pay-transactions';
         value: string | ApplePayTransaction;
       } | null)
@@ -349,6 +494,22 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'apple-pay-cancel-subscription';
         value: string | ApplePayCancelSubscription;
+      } | null)
+    | ({
+        relationTo: 'handcrafted';
+        value: string | Handcrafted;
+      } | null)
+    | ({
+        relationTo: 'comments';
+        value: string | Comment;
+      } | null)
+    | ({
+        relationTo: 'posts';
+        value: string | Post;
+      } | null)
+    | ({
+        relationTo: 'likes';
+        value: string | Like;
       } | null);
   globalSlug?: string | null;
   user: {
@@ -401,6 +562,7 @@ export interface UsersSelect<T extends boolean = true> {
   lastName?: T;
   currentActivePlan?: T;
   planStatus?: T;
+  stripeCustomerID?: T;
   userAvatar?: T;
   lastLogin?: T;
   lastAppAccess?: T;
@@ -515,6 +677,34 @@ export interface MealPlanNotificationsSelect<T extends boolean = true> {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "ingredients_select".
+ */
+export interface IngredientsSelect<T extends boolean = true> {
+  name?: T;
+  category?: T;
+  isCommon?: T;
+  metabolicBalanceSubstitute?: T;
+  description?: T;
+  isActive?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "ai-prompts_select".
+ */
+export interface AiPromptsSelect<T extends boolean = true> {
+  name?: T;
+  promptType?: T;
+  content?: T;
+  description?: T;
+  isActive?: T;
+  order?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "apple-pay-transactions_select".
  */
 export interface ApplePayTransactionsSelect<T extends boolean = true> {
@@ -548,6 +738,72 @@ export interface ApplePayCancelSubscriptionSelect<T extends boolean = true> {
   cancelTime?: T;
   updatedAt?: T;
   createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "handcrafted_select".
+ */
+export interface HandcraftedSelect<T extends boolean = true> {
+  userId?: T;
+  name?: T;
+  ingredients?:
+    | T
+    | {
+        ingredient?: T;
+        name?: T;
+        quantity?: T;
+        unit?: T;
+        id?: T;
+      };
+  method?:
+    | T
+    | {
+        step?: T;
+        id?: T;
+      };
+  cookingTime?: T;
+  imagePrompt?: T;
+  isFavourite?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "comments_select".
+ */
+export interface CommentsSelect<T extends boolean = true> {
+  content?: T;
+  author?: T;
+  post?: T;
+  likes?: T;
+  likesCount?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "posts_select".
+ */
+export interface PostsSelect<T extends boolean = true> {
+  content?: T;
+  author?: T;
+  image?: T;
+  likesCount?: T;
+  likeslll?: T;
+  commentsCount?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "likes_select".
+ */
+export interface LikesSelect<T extends boolean = true> {
+  post?: T;
+  user?: T;
+  createdAt?: T;
+  isLiked?: T;
+  updatedAt?: T;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema

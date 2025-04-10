@@ -34,6 +34,11 @@ export const Users: CollectionConfig = {
       type: 'text',
     },
     {
+      name: 'stripeCustomerID',
+      type: 'text',
+      required: true,
+    },
+    {
       name: 'userAvatar',
       type: 'upload',
       relationTo: 'media',
