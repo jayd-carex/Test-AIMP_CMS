@@ -48,6 +48,7 @@ export async function POST(req: Request) {
       const invoice_paid = event.data.object as Stripe.Invoice
 
       const stripeCustomerID = invoice_paid.customer as string
+      const userEmail = invoice_paid.customer_email
       const subscriptionId = invoice_paid.subscription as string
 
       const planId = invoice_paid.lines.data[0]?.plan?.id || null
@@ -65,8 +66,8 @@ export async function POST(req: Request) {
         const users = await payload.find({
           collection: 'users',
           where: {
-            stripeCustomerID: {
-              equals: stripeCustomerID,
+            email: {
+              equals: userEmail,
             },
           },
         })
@@ -84,6 +85,7 @@ export async function POST(req: Request) {
           data: {
             currentActivePlan: planId || planName,
             planStatus: 'active',
+            stripeCustomerID: stripeCustomerID,
           },
         })
 
