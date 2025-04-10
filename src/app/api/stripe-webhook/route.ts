@@ -1,5 +1,6 @@
-import { NextApiRequest, NextApiResponse } from 'next'
 import { NextResponse } from 'next/server'
+import { getPayload } from 'payload'
+import configPromise from '@/payload.config'
 import Stripe from 'stripe'
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
@@ -32,7 +33,6 @@ export async function POST(req: Request) {
     return NextResponse.error()
   }
 
-  // Handle the different types of events you want to listen to
   switch (event.type) {
     case 'invoice.payment_succeeded':
       const invoice = event.data.object
@@ -45,8 +45,55 @@ export async function POST(req: Request) {
       break
 
     case 'invoice.paid':
-      const invoice_paid = event.data.object
-      console.log('Payment for invoice paid:', invoice_paid)
+      const invoice_paid = event.data.object as Stripe.Invoice
+
+      const stripeCustomerID = invoice_paid.customer as string
+      const subscriptionId = invoice_paid.subscription as string
+
+      const planId = invoice_paid.lines.data[0]?.plan?.id || null
+      const planName = invoice_paid.lines.data[0]?.description || 'default-plan'
+
+      console.log(
+        `💰 Invoice paid for customer: ${stripeCustomerID}, plan: ${planName}, planId: ${planId}`,
+      )
+
+      const payload = await getPayload({
+        config: configPromise,
+      })
+
+      try {
+        const users = await payload.find({
+          collection: 'users',
+          where: {
+            stripeCustomerID: {
+              equals: stripeCustomerID,
+            },
+          },
+        })
+
+        if (users.docs.length === 0) {
+          console.error('❌ No user found with stripeCustomerID:', stripeCustomerID)
+          break
+        }
+
+        const user = users.docs[0]
+
+        await payload.update({
+          collection: 'users',
+          id: user.id,
+          data: {
+            currentActivePlan: planId || planName,
+            planStatus: 'active',
+          },
+        })
+
+        console.log(
+          `✅ Updated user ${user.email} with active plan "${planName}" and plan ID "${planId}"`,
+        )
+      } catch (err) {
+        console.error('❌ Failed to update user after invoice paid:', err)
+      }
+
       break
 
     case 'invoice.overdue':
