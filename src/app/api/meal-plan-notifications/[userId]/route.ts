@@ -28,7 +28,10 @@ export async function OPTIONS(request: Request) {
   return new NextResponse(null, { status: 204 })
 }
 
-export async function GET(request: NextRequest, { params }: { params: { userId: string } }) {
+export async function GET(
+  request: NextRequest,
+  { params }: { params: { userId: string } }
+) {
   try {
     const origin = request.headers.get('origin') ?? ''
     const userId = params.userId
@@ -97,7 +100,10 @@ export async function GET(request: NextRequest, { params }: { params: { userId: 
   }
 }
 
-export async function POST(request: NextRequest, { params }: { params: { userId: string } }) {
+export async function POST(
+  request: NextRequest,
+  { params }: { params: { userId: string } }
+) {
   try {
     const origin = request.headers.get('origin') ?? ''
     const userId = params.userId
