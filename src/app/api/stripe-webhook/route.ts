@@ -3,6 +3,10 @@ import { getPayload } from 'payload'
 import configPromise from '@/payload.config'
 import Stripe from 'stripe'
 
+// const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
+//   apiVersion: '2025-02-24.acacia',
+// })
+
 const endpointSecret = process.env.STRIPE_WEBHOOK_SECRET!
 
 export const config = {
@@ -14,7 +18,7 @@ export const config = {
 export async function POST(req: Request) {
   const Stripe = (await import('stripe')).default
   const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
-    apiVersion: '2023-10-16',
+    apiVersion: '2025-02-24.acacia',
   })
   const sig = req.headers.get('stripe-signature')
 
@@ -178,10 +182,10 @@ export async function POST(req: Request) {
 
       break
 
-    // case 'invoice.overdue':
-    //   const invoice_overdue = event.data.object
-    //   console.log('Payment for invoice overdue:', invoice_overdue)
-    //   break
+    case 'invoice.overdue':
+      const invoice_overdue = event.data.object
+      console.log('Payment for invoice overdue:', invoice_overdue)
+      break
 
     case 'customer.subscription.created':
       const createSubscription = event.data.object

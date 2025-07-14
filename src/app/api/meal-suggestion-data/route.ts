@@ -133,7 +133,7 @@ export async function POST(req: Request) {
       }
 
       const mealSuggestionResponse = await fetch(
-        `http://192.168.1.7:3000/api/import-meal-suggestion-data`,
+        `https://test-aimp-cms.vercel.app/api/import-meal-suggestion-data`,
         {
           method: 'POST',
           headers: {
@@ -149,7 +149,7 @@ export async function POST(req: Request) {
       meal_API_res = await mealSuggestionResponse.json()
 
       const phase2IngredientsResponse = await fetch(
-        `http://192.168.1.7:3000/api/import-phase2-ingredients`,
+        `https://test-aimp-cms.vercel.app/api/import-phase2-ingredients`,
         {
           method: 'POST',
           headers: {
@@ -204,7 +204,7 @@ export async function POST(req: Request) {
       console.log(ingredientDataPhase2)
 
       const phase2IngredientsResponse = await fetch(
-        `http://192.168.1.7:3000/api/import-phase2-ingredients-data-v2`,
+        `https://test-aimp-cms.vercel.app/api/import-phase2-ingredients-data-v2`,
         {
           method: 'POST',
           headers: {
@@ -334,7 +334,7 @@ export async function POST(req: Request) {
       ]
 
       const mealSuggestionResponse = await fetch(
-        `http://192.168.1.7:3000/api/import-meal-suggestion-data`,
+        `https://test-aimp-cms.vercel.app/api/import-meal-suggestion-data`,
         {
           method: 'POST',
           headers: {
@@ -350,7 +350,7 @@ export async function POST(req: Request) {
       meal_API_res = await mealSuggestionResponse.json()
 
       const phase2IngredientsResponse = await fetch(
-        `http://192.168.1.7:3000/api/import-phase2-ingredients`,
+        `https://test-aimp-cms.vercel.app/api/import-phase2-ingredients`,
         {
           method: 'POST',
           headers: {

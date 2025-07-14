@@ -89,7 +89,7 @@ export async function POST(req: Request) {
       )
 
       const phase3IngredientsResponse = await fetch(
-        `http://192.168.1.7:3000/api/import-phase3-ingredients`,
+        `https://test-aimp-cms.vercel.app/api/import-phase3-ingredients`,
         {
           method: 'POST',
           headers: {
