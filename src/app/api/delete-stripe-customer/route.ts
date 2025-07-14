@@ -3,7 +3,7 @@ import { NextResponse } from 'next/server'
 export async function DELETE(req: Request) {
   const Stripe = (await import('stripe')).default
   const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
-    apiVersion: '2025-06-30.basil',
+    apiVersion: '2023-10-16',
   })
   try {
     const { customerId } = await req.json()

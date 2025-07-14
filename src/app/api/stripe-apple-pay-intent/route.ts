@@ -7,7 +7,7 @@ import { NextResponse } from 'next/server'
 export async function POST(req: Request) {
   const Stripe = (await import('stripe')).default
   const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
-    apiVersion: '2025-06-30.basil',
+    apiVersion: '2023-10-16',
   })
   try {
     const { deviceId, customerId, promotionCode } = await req.json()
@@ -51,7 +51,7 @@ export async function POST(req: Request) {
 
     const ephemeralKey = await stripe.ephemeralKeys.create(
       { customer: finalCustomerId },
-      { apiVersion: '2025-06-30.basil' },
+      { apiVersion: '2023-10-16' },
     )
 
     const setupIntent = await stripe.setupIntents.create({

@@ -1,60 +1,55 @@
+import { NextRequest, NextResponse } from 'next/server'
 import { getPayload } from 'payload'
 import configPromise from '@/payload.config'
-import { NextResponse } from 'next/server'
-import { NextRequest } from 'next/server'
 
-// Define allowed origins
+// Allowed CORS origins
 const allowedOrigins = [
   'http://localhost:8081',
   'http://localhost:3000',
-  // Add other origins as needed
+  // Add other allowed origins here
 ]
 
-// Handle OPTIONS request for CORS preflight
-export async function OPTIONS(request: Request) {
-  const origin = request.headers.get('origin') ?? ''
+// Handle OPTIONS request (CORS preflight)
+export async function OPTIONS(req: NextRequest) {
+  const origin = req.headers.get('origin') ?? ''
 
   if (allowedOrigins.includes(origin)) {
     return new NextResponse(null, {
       status: 200,
       headers: {
         'Access-Control-Allow-Origin': origin,
-        'Access-Control-Allow-Methods': 'GET, POST',
+        'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
         'Access-Control-Allow-Headers': 'Content-Type, Authorization',
         'Access-Control-Max-Age': '86400',
       },
     })
   }
+
   return new NextResponse(null, { status: 204 })
 }
 
+// GET /api/meal-plan-notifications/[userId]
 export async function GET(
   request: NextRequest,
-  { params }: { params: { userId: string } }
+  context: any
 ) {
+  const origin = request.headers.get('origin') ?? ''
+  const userId = context.params.userId
+
+  if (!userId) {
+    return NextResponse.json(
+      { error: 'User ID is required' },
+      {
+        status: 400,
+        headers: corsHeaders(origin, 'GET'),
+      }
+    )
+  }
+
   try {
-    const origin = request.headers.get('origin') ?? ''
-    const userId = params.userId
+    const payload = await getPayload({ config: configPromise })
 
-    if (!userId) {
-      return NextResponse.json(
-        { error: 'User ID is required' },
-        {
-          status: 400,
-          headers: {
-            'Access-Control-Allow-Origin': origin,
-            'Access-Control-Allow-Methods': 'GET',
-            'Access-Control-Allow-Headers': 'Content-Type, Authorization',
-          },
-        },
-      )
-    }
-
-    const payload = await getPayload({
-      config: configPromise,
-    })
-
-    const mealPlanNotifications = await payload.find({
+    const result = await payload.find({
       collection: 'meal-plan-notifications',
       where: {
         email: {
@@ -63,88 +58,66 @@ export async function GET(
       },
     })
 
-    if (mealPlanNotifications.docs.length === 0) {
+    if (result.docs.length === 0) {
       return NextResponse.json(
-        { error: 'No meal plan notifications found for this user' },
+        { error: 'No meal plan notifications found' },
         {
           status: 404,
-          headers: {
-            'Access-Control-Allow-Origin': origin,
-            'Access-Control-Allow-Methods': 'GET',
-            'Access-Control-Allow-Headers': 'Content-Type, Authorization',
-          },
-        },
+          headers: corsHeaders(origin, 'GET'),
+        }
       )
     }
 
-    return NextResponse.json(mealPlanNotifications.docs[0], {
-      headers: {
-        'Access-Control-Allow-Origin': origin,
-        'Access-Control-Allow-Methods': 'GET',
-        'Access-Control-Allow-Headers': 'Content-Type, Authorization',
-      },
+    return NextResponse.json(result.docs[0], {
+      headers: corsHeaders(origin, 'GET'),
     })
-  } catch (error) {
-    console.error('Error fetching meal plan notification:', error)
+  } catch (err) {
+    console.error('❌ GET error:', err)
     return NextResponse.json(
       { error: 'Failed to fetch meal plan notification' },
       {
         status: 500,
-        headers: {
-          'Access-Control-Allow-Origin': '*',
-          'Access-Control-Allow-Methods': 'GET',
-          'Access-Control-Allow-Headers': 'Content-Type, Authorization',
-        },
-      },
+        headers: corsHeaders(origin, 'GET'),
+      }
     )
   }
 }
 
+// POST /api/meal-plan-notifications/[userId]
 export async function POST(
   request: NextRequest,
-  { params }: { params: { userId: string } }
+  context: any
 ) {
+  const origin = request.headers.get('origin') ?? ''
+  const userId = context.params.userId
+
+  if (!userId) {
+    return NextResponse.json(
+      { error: 'User ID is required' },
+      {
+        status: 400,
+        headers: corsHeaders(origin, 'POST'),
+      }
+    )
+  }
+
   try {
-    const origin = request.headers.get('origin') ?? ''
-    const userId = params.userId
-
-    if (!userId) {
-      return NextResponse.json(
-        { error: 'User ID is required' },
-        {
-          status: 400,
-          headers: {
-            'Access-Control-Allow-Origin': origin,
-            'Access-Control-Allow-Methods': 'POST',
-            'Access-Control-Allow-Headers': 'Content-Type, Authorization',
-          },
-        },
-      )
-    }
-
     const body = await request.json()
     const { planLastGenerated, mbPlan, selectedPlan, email } = body
 
-    // Validate required fields
     if (!planLastGenerated || !mbPlan || !selectedPlan || !email) {
       return NextResponse.json(
         { error: 'Missing required fields' },
         {
           status: 400,
-          headers: {
-            'Access-Control-Allow-Origin': origin,
-            'Access-Control-Allow-Methods': 'POST',
-            'Access-Control-Allow-Headers': 'Content-Type, Authorization',
-          },
-        },
+          headers: corsHeaders(origin, 'POST'),
+        }
       )
     }
 
-    const payload = await getPayload({
-      config: configPromise,
-    })
+    const payload = await getPayload({ config: configPromise })
 
-    const newMealPlanNotification = await payload.create({
+    const created = await payload.create({
       collection: 'meal-plan-notifications',
       data: {
         userId,
@@ -155,26 +128,27 @@ export async function POST(
       },
     })
 
-    return NextResponse.json(newMealPlanNotification, {
+    return NextResponse.json(created, {
       status: 201,
-      headers: {
-        'Access-Control-Allow-Origin': origin,
-        'Access-Control-Allow-Methods': 'POST',
-        'Access-Control-Allow-Headers': 'Content-Type, Authorization',
-      },
+      headers: corsHeaders(origin, 'POST'),
     })
-  } catch (error) {
-    console.error('Error creating meal plan notification:', error)
+  } catch (err) {
+    console.error('❌ POST error:', err)
     return NextResponse.json(
       { error: 'Failed to create meal plan notification' },
       {
         status: 500,
-        headers: {
-          'Access-Control-Allow-Origin': '*',
-          'Access-Control-Allow-Methods': 'POST',
-          'Access-Control-Allow-Headers': 'Content-Type, Authorization',
-        },
-      },
+        headers: corsHeaders(origin, 'POST'),
+      }
     )
+  }
+}
+
+// Reusable CORS headers
+function corsHeaders(origin: string, method: string) {
+  return {
+    'Access-Control-Allow-Origin': origin,
+    'Access-Control-Allow-Methods': method,
+    'Access-Control-Allow-Headers': 'Content-Type, Authorization',
   }
 }
