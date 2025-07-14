@@ -1,11 +1,10 @@
 import { NextResponse } from 'next/server'
-import Stripe from 'stripe'
-
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!)
 
 export async function POST(req: Request) {
+  const Stripe = (await import('stripe')).default
+  const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!)
   try {
-    const { customerId, paymentMethodId, priceId } = await req.json()
+    const { customerId, paymentMethodId, priceId, promotionCode } = await req.json()
 
     if (!customerId || !paymentMethodId || !priceId) {
       return NextResponse.json({ error: 'Missing fields' }, { status: 400 })
@@ -17,18 +16,41 @@ export async function POST(req: Request) {
       if (err.code !== 'resource_already_exists') throw err
     }
 
-    // Set default payment method
     await stripe.customers.update(customerId, {
       invoice_settings: { default_payment_method: paymentMethodId },
     })
 
-    // Create subscription
-    const subscription = await stripe.subscriptions.create({
+    // Validate promotion code if provided
+    let validPromotion = null
+    if (promotionCode) {
+      try {
+        const promotions = await stripe.promotionCodes.list({
+          code: promotionCode,
+          active: true,
+        })
+        validPromotion = promotions.data[0]
+
+        if (!validPromotion) {
+          return NextResponse.json(
+            { error: `Invalid or inactive promotion code: ${promotionCode}` },
+            { status: 400 },
+          )
+        }
+      } catch (error) {
+        console.error('Promotion code validation error:', error)
+        return NextResponse.json({ error: 'Failed to validate promotion code' }, { status: 400 })
+      }
+    }
+
+    const subscriptionData = {
       customer: customerId,
       items: [{ price: priceId }],
       default_payment_method: paymentMethodId,
       expand: ['latest_invoice.payment_intent'],
-    })
+      promotion_code: validPromotion?.id,
+    }
+
+    const subscription = await stripe.subscriptions.create(subscriptionData)
 
     const invoice = subscription.latest_invoice
     if (
@@ -39,6 +61,13 @@ export async function POST(req: Request) {
       return NextResponse.json({
         subscription,
         clientSecret: invoice.payment_intent.client_secret,
+        appliedPromotion: validPromotion
+          ? {
+              code: promotionCode,
+              amountOff: validPromotion.coupon.amount_off,
+              percentOff: validPromotion.coupon.percent_off,
+            }
+          : null,
       })
     }
 

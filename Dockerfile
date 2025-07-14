@@ -3,6 +3,13 @@
 
 FROM node:22.12.0-alpine AS base
 
+ARG OPENAI_API_KEY
+ENV OPENAI_API_KEY=$OPENAI_API_KEY
+
+ARG API_BASE_URL
+ENV API_BASE_URL==$API_BASE_URL
+
+
 # Install dependencies only when needed
 FROM base AS deps
 # Check https://github.com/nodejs/docker-node/tree/b4117f9333da4138b03a546ec926ef50a31506c3#nodealpine to understand why libc6-compat might be needed.
@@ -10,20 +17,22 @@ RUN apk add --no-cache libc6-compat
 WORKDIR /app
 
 # Install dependencies based on the preferred package manager
-COPY package.json yarn.lock* package-lock.json* pnpm-lock.yaml* ./
-RUN \
-  if [ -f yarn.lock ]; then yarn --frozen-lockfile; \
-  elif [ -f package-lock.json ]; then npm i; \
-  elif [ -f pnpm-lock.yaml ]; then corepack enable pnpm && pnpm i --frozen-lockfile; \
-  else echo "Lockfile not found." && exit 1; \
-  fi
-
+COPY package.json package-lock.json ./
+RUN npm i
 
 # Rebuild the source code only when needed
 FROM base AS builder
 WORKDIR /app
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
+
+# Ensure that the MB BoK file (for an initial read) is in the right place
+COPY metabolic-guidelines.txt ./metabolic-guidelines.txt
+
+RUN ls -l ./metabolic-guidelines.txt
+
+# Debug line to show OpenAI key during build
+RUN echo "Debug: OPENAI_API_KEY is $OPENAI_API_KEY"
 
 # Next.js collects completely anonymous telemetry data about general usage.
 # Learn more here: https://nextjs.org/telemetry

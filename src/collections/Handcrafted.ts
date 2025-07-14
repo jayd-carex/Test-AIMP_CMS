@@ -80,6 +80,12 @@ const Handcrafted: CollectionConfig = {
       label: 'Recipe Description',
     },
     {
+      name: 'image',
+      type: 'upload',
+      relationTo: 'media',
+      required: false,
+    },
+    {
       name: 'isFavourite',
       type: 'checkbox',
       required: false,

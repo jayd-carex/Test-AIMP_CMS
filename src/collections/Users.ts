@@ -11,10 +11,28 @@ export const Users: CollectionConfig = {
     create: () => true,
     update: () => true,
     delete: () => true,
+    // Add admin-only login restriction
+    admin: ({ req: { user } }) => {
+      return Boolean((user?.role as string) === 'admin')
+    },
   },
   fields: [
-    // Email added by default
-    // Add more fields as needed
+    {
+      name: 'role',
+      type: 'select',
+      required: true,
+      defaultValue: 'user',
+      options: [
+        {
+          label: 'Admin',
+          value: 'admin',
+        },
+        {
+          label: 'User',
+          value: 'user',
+        },
+      ],
+    },
     {
       name: 'firstName',
       type: 'text',
@@ -24,6 +42,14 @@ export const Users: CollectionConfig = {
       name: 'lastName',
       type: 'text',
       required: true,
+    },
+    {
+      name: 'practitionerName',
+      type: 'text',
+    },
+    {
+      name: 'practitionerEmail',
+      type: 'email',
     },
     {
       name: 'currentActivePlan',
@@ -36,7 +62,7 @@ export const Users: CollectionConfig = {
     {
       name: 'stripeCustomerID',
       type: 'text',
-      required: true,
+      required: false,
     },
     {
       name: 'userAvatar',
@@ -82,6 +108,21 @@ export const Users: CollectionConfig = {
       name: 'userFirebaseToken',
       type: 'text',
       required: false,
+    },
+    {
+      name: 'lastViewedCommunity',
+      type: 'date',
+      required: false,
+      admin: {
+        date: {
+          pickerAppearance: 'dayAndTime',
+        },
+      },
+    },
+    {
+      name: 'AiRememberConversation',
+      type: 'text',
+      defaultValue: 'ON',
     },
   ],
 }

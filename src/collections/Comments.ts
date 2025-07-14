@@ -15,27 +15,14 @@ const Comments: CollectionConfig = {
   access: {
     create: () => true,
     read: () => true,
-    update: ({ req: { user }, id }) => {
-      if (!user) return false
-      return user.id === id
-    },
-    delete: ({ req: { user }, id }) => {
-      if (!user) return false
-      return user.id === id
-    },
+    update: () => true,
+    delete: () => true,
   },
   fields: [
     {
       name: 'content',
       type: 'textarea',
       required: true,
-    },
-    {
-      name: 'author',
-      type: 'relationship',
-      relationTo: 'users',
-      required: true,
-      hasMany: false,
     },
     {
       name: 'post',
@@ -45,51 +32,13 @@ const Comments: CollectionConfig = {
       hasMany: false,
     },
     {
-      name: 'likes',
+      name: 'user',
       type: 'relationship',
       relationTo: 'users',
       hasMany: true,
     },
-    {
-      name: 'likesCount',
-      type: 'number',
-      defaultValue: 0,
-      admin: {
-        readOnly: true,
-      },
-    },
   ],
   timestamps: true,
-  hooks: {
-    afterChange: [
-      async ({ doc, operation, req: { payload } }) => {
-        // Update post's commentsCount
-        const post = await payload.findByID({
-          collection: 'posts' as CollectionSlug,
-          id: doc.post,
-        })
-
-        const op = operation as 'create' | 'delete'
-        if (op === 'create') {
-          await payload.update({
-            collection: 'posts' as CollectionSlug,
-            id: doc.post,
-            data: {
-              commentsCount: (post as any).commentsCount || 0 + 1,
-            },
-          })
-        } else if (op === 'delete') {
-          await payload.update({
-            collection: 'posts' as CollectionSlug,
-            id: doc.post,
-            data: {
-              commentsCount: Math.max((post as any).commentsCount || 1 - 1, 0),
-            },
-          })
-        }
-      },
-    ],
-  },
 }
 
 export default Comments

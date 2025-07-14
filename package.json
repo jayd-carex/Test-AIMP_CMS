@@ -19,19 +19,21 @@
     "@payloadcms/next": "latest",
     "@payloadcms/payload-cloud": "latest",
     "@payloadcms/richtext-lexical": "latest",
-    "@stripe/stripe-js": "^6.1.0",
     "@payloadcms/storage-s3": "^3.32.0",
+    "@stripe/stripe-js": "^6.1.0",
     "aws-sdk": "^2.1692.0",
     "cross-env": "^7.0.3",
     "expo-server-sdk": "^3.14.0",
+    "fs-extra": "^11.3.0",
     "graphql": "^16.8.1",
     "next": "^15.1.0",
+    "openai": "^4.98.0",
     "payload": "latest",
     "react": "19.0.0",
     "react-dom": "19.0.0",
     "sharp": "0.32.6",
     "socket.io": "^4.7.4",
-    "stripe": "^17.7.0"
+    "stripe": "^14.0.0"
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3.2.0",

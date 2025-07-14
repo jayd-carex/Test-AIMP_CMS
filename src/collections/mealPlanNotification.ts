@@ -61,40 +61,70 @@ const MealPlanNotifications: CollectionConfig = {
 
             if (user.docs.length > 0) {
               const userDoc = user.docs[0]
-              console.log('Found user token:', userDoc.userFirebaseToken)
+              const notifications = await req.payload.find({
+                collection: 'notifications',
+                where: {
+                  userId: {
+                    equals: userDoc.id,
+                  },
+                },
+              })
 
-              if (userDoc.userFirebaseToken) {
-                try {
-                  const message = {
-                    to: userDoc.userFirebaseToken,
-                    title: 'Meal Plan Update',
-                    body: 'Your meal plan has been updated!',
-                    data: {
-                      type: 'meal_plan_update',
-                      planId: doc.id,
-                    },
-                    sound: 'default',
-                    priority: 'high',
-                    _displayInForeground: true,
+              if (notifications.docs.length > 0) {
+                const notificationDoc = notifications.docs[0]
+
+                if (notificationDoc.weeklyMealPlanNotification && userDoc.userFirebaseToken) {
+                  const messages = [
+                    '🎉 Your new AiMP meal plan is ready — fresh recipes and smart ideas, just for you!',
+                    'Chef Ai has done the work! Your personalised weekly meal plan is waiting 🍽️',
+                    '✅ Planning = done. Your AI meal plan for the week has landed in AiMP!',
+                    'You’ve got taste! Your customised meals for the week are now live 🎯',
+                    '🥕 Fresh picks, smart meals, less stress — your plan’s ready to roll!',
+                    'Let’s crush this week’s goals. Your AiMP meal plan is good to go 💪',
+                    '🧠 AI just mapped your meals! Jump in and see what’s on your plate this week.',
+                    'Done and dusted: your weekly meal plan is live. You’re going to love these bites!',
+                    '📦 Your food game, delivered. Check out your fresh new plan in AiMP.',
+                    '🍏 This week just got easier. Your personalised nutrition plan is waiting.',
+                  ]
+
+                  const randomMessage = messages[Math.floor(Math.random() * messages.length)]
+
+                  try {
+                    const message = {
+                      to: userDoc.userFirebaseToken,
+                      title: 'AiMP new meal plan',
+                      body: randomMessage,
+                      data: {
+                        type: 'meal_plan_update',
+                        planId: doc.id,
+                      },
+                      sound: 'default',
+                      priority: 'high',
+                      _displayInForeground: true,
+                    }
+                    if (!process.env.NOTIFICATION_URL) {
+                      throw new Error(
+                        'NOTIFICATION_URL is not defined in the environment variables',
+                      )
+                    }
+                    const response = await fetch(process.env.NOTIFICATION_URL, {
+                      method: 'POST',
+                      headers: {
+                        Accept: 'application/json',
+                        'Accept-encoding': 'gzip, deflate',
+                        'Content-Type': 'application/json',
+                      },
+                      body: JSON.stringify(message),
+                    })
+
+                    const result = await response.json()
+                    console.log('Push notification result:', result)
+                  } catch (error) {
+                    console.error('Error sending notification:', error)
                   }
-
-                  const response = await fetch('https://exp.host/--/api/v2/push/send', {
-                    method: 'POST',
-                    headers: {
-                      Accept: 'application/json',
-                      'Accept-encoding': 'gzip, deflate',
-                      'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify(message),
-                  })
-
-                  const result = await response.json()
-                  console.log('Push notification result:', result)
-                } catch (error) {
-                  console.error('Error sending notification:', error)
+                } else {
+                  console.log('No push token found for user')
                 }
-              } else {
-                console.log('No push token found for user')
               }
             }
           } catch (error) {

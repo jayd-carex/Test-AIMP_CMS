@@ -1,3 +1,4 @@
+import { Like } from './payload-types'
 // storage-adapter-import-placeholder
 import { mongooseAdapter } from '@payloadcms/db-mongodb'
 import { payloadCloudPlugin } from '@payloadcms/payload-cloud'
@@ -16,19 +17,33 @@ import MealPlanNotifications from './collections/mealPlanNotification'
 import Ingredients from './collections/Ingredients'
 import AIPrompts from './collections/AIPrompts'
 import { ApplePayTransaction } from './collections/ApplePayTransaction'
-import { AppleProduct } from './collections/AppleProduct'
 import { ApplePayCancelSubscription } from './collections/ApplePayCancelSubscription'
 import Handcrafted from './collections/Handcrafted'
 
 import Comments from './collections/Comments'
 import Posts from './collections/Post'
 import { s3Storage } from '@payloadcms/storage-s3'
-import Likes from './collections/likes'
+import Likes from './collections/PostLikes'
+import { Plans } from './collections/Plans'
+import MealSuggestions from './collections/MealSuggestions'
+import OpenAIVectorFile from './collections/OpenAIVectorFile'
+import MetabolicKnowledgeBase from './collections/MetabolicKnowledgeBase'
+import OpenAIModels from './collections/OpenAIModals'
+import OpenAIParameters from './collections/OpenAIParameter'
+import OpenAITokenUsages from './collections/OpenAITokenUsages'
+import TokenSettings from './globals/TokenSettings'
+import Phase2Ingredients from './collections/phase2Ingredients'
+import Phase3Ingredients from './collections/Phase3Ingredients'
+import TextExtractPrompts from './collections/TextExtractPrompts'
+import UserPlanners from './collections/UserPlanners'
+import ChatThread from './collections/ChatThread'
+import Category from './collections/Category'
 const filename = fileURLToPath(import.meta.url)
 const dirname = path.dirname(filename)
 
 export default buildConfig({
   admin: { user: Users.slug, importMap: { baseDir: path.resolve(dirname) } },
+  globals: [TokenSettings],
   collections: [
     Users,
     Media,
@@ -36,15 +51,27 @@ export default buildConfig({
     Notifications,
     NotificationsList,
     MealPlanNotifications,
+    TextExtractPrompts,
+    MealSuggestions,
     Ingredients,
+    Phase2Ingredients,
+    Phase3Ingredients,
+    MetabolicKnowledgeBase,
     AIPrompts,
+    OpenAIModels,
+    OpenAIParameters,
+    OpenAITokenUsages,
+    ChatThread,
     ApplePayTransaction,
-    AppleProduct,
     ApplePayCancelSubscription,
     Handcrafted,
     Comments,
     Posts,
     Likes,
+    Plans,
+    OpenAIVectorFile,
+    UserPlanners,
+    Category,
   ],
   editor: lexicalEditor(),
   secret: process.env.PAYLOAD_SECRET || '',

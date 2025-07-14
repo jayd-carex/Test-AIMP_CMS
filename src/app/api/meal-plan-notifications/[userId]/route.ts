@@ -32,7 +32,7 @@ export async function GET(request: NextRequest) {
   try {
     const origin = request.headers.get('origin') ?? ''
     const url = new URL(request.url)
-    const userId = url.pathname.split('/')[3] // Extract userId from URL (e.g., '/meal-plan-notifications/{userId}')
+    const userId = url.pathname.split('/')[3]
 
     if (!userId) {
       return NextResponse.json(
@@ -55,7 +55,7 @@ export async function GET(request: NextRequest) {
     const mealPlanNotifications = await payload.find({
       collection: 'meal-plan-notifications',
       where: {
-        userId: {
+        email: {
           equals: userId,
         },
       },
@@ -102,7 +102,7 @@ export async function POST(request: NextRequest) {
   try {
     const origin = request.headers.get('origin') ?? ''
     const url = new URL(request.url)
-    const userId = url.pathname.split('/')[3] // Extract userId from URL (e.g., '/meal-plan-notifications/{userId}')
+    const userId = url.pathname.split('/')[3]
 
     if (!userId) {
       return NextResponse.json(

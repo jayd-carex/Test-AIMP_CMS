@@ -73,15 +73,27 @@ export interface Config {
     notifications: Notification;
     'notifications-list': NotificationsList;
     'meal-plan-notifications': MealPlanNotification;
+    'text-extract-prompts': TextExtractPrompt;
+    'meal-suggestions': MealSuggestion;
     ingredients: Ingredient;
+    'phase-2-ingredients': Phase2Ingredient;
+    'phase-3-ingredients': Phase3Ingredient;
+    'metabolic-knowledge-base': MetabolicKnowledgeBase;
     'ai-prompts': AiPrompt;
+    'openai-models': OpenaiModel;
+    'openai-parameters': OpenaiParameter;
+    'open-ai-token-usages': OpenAiTokenUsage;
+    'chat-threads': ChatThread;
     'apple-pay-transactions': ApplePayTransaction;
-    'apple-product': AppleProduct;
     'apple-pay-cancel-subscription': ApplePayCancelSubscription;
     handcrafted: Handcrafted;
     comments: Comment;
     posts: Post;
     likes: Like;
+    plans: Plan;
+    'open-ai-vector-file': OpenAiVectorFile;
+    userplanners: Userplanner;
+    categories: Category;
     'payload-locked-documents': PayloadLockedDocument;
     'payload-preferences': PayloadPreference;
     'payload-migrations': PayloadMigration;
@@ -94,15 +106,27 @@ export interface Config {
     notifications: NotificationsSelect<false> | NotificationsSelect<true>;
     'notifications-list': NotificationsListSelect<false> | NotificationsListSelect<true>;
     'meal-plan-notifications': MealPlanNotificationsSelect<false> | MealPlanNotificationsSelect<true>;
+    'text-extract-prompts': TextExtractPromptsSelect<false> | TextExtractPromptsSelect<true>;
+    'meal-suggestions': MealSuggestionsSelect<false> | MealSuggestionsSelect<true>;
     ingredients: IngredientsSelect<false> | IngredientsSelect<true>;
+    'phase-2-ingredients': Phase2IngredientsSelect<false> | Phase2IngredientsSelect<true>;
+    'phase-3-ingredients': Phase3IngredientsSelect<false> | Phase3IngredientsSelect<true>;
+    'metabolic-knowledge-base': MetabolicKnowledgeBaseSelect<false> | MetabolicKnowledgeBaseSelect<true>;
     'ai-prompts': AiPromptsSelect<false> | AiPromptsSelect<true>;
+    'openai-models': OpenaiModelsSelect<false> | OpenaiModelsSelect<true>;
+    'openai-parameters': OpenaiParametersSelect<false> | OpenaiParametersSelect<true>;
+    'open-ai-token-usages': OpenAiTokenUsagesSelect<false> | OpenAiTokenUsagesSelect<true>;
+    'chat-threads': ChatThreadsSelect<false> | ChatThreadsSelect<true>;
     'apple-pay-transactions': ApplePayTransactionsSelect<false> | ApplePayTransactionsSelect<true>;
-    'apple-product': AppleProductSelect<false> | AppleProductSelect<true>;
     'apple-pay-cancel-subscription': ApplePayCancelSubscriptionSelect<false> | ApplePayCancelSubscriptionSelect<true>;
     handcrafted: HandcraftedSelect<false> | HandcraftedSelect<true>;
     comments: CommentsSelect<false> | CommentsSelect<true>;
     posts: PostsSelect<false> | PostsSelect<true>;
     likes: LikesSelect<false> | LikesSelect<true>;
+    plans: PlansSelect<false> | PlansSelect<true>;
+    'open-ai-vector-file': OpenAiVectorFileSelect<false> | OpenAiVectorFileSelect<true>;
+    userplanners: UserplannersSelect<false> | UserplannersSelect<true>;
+    categories: CategoriesSelect<false> | CategoriesSelect<true>;
     'payload-locked-documents': PayloadLockedDocumentsSelect<false> | PayloadLockedDocumentsSelect<true>;
     'payload-preferences': PayloadPreferencesSelect<false> | PayloadPreferencesSelect<true>;
     'payload-migrations': PayloadMigrationsSelect<false> | PayloadMigrationsSelect<true>;
@@ -110,8 +134,12 @@ export interface Config {
   db: {
     defaultIDType: string;
   };
-  globals: {};
-  globalsSelect: {};
+  globals: {
+    'token-settings': TokenSetting;
+  };
+  globalsSelect: {
+    'token-settings': TokenSettingsSelect<false> | TokenSettingsSelect<true>;
+  };
   locale: null;
   user: User & {
     collection: 'users';
@@ -145,17 +173,22 @@ export interface UserAuthOperations {
  */
 export interface User {
   id: string;
+  role: 'admin' | 'user';
   firstName: string;
   lastName: string;
+  practitionerName?: string | null;
+  practitionerEmail?: string | null;
   currentActivePlan?: string | null;
   planStatus?: string | null;
-  stripeCustomerID: string;
+  stripeCustomerID?: string | null;
   userAvatar?: (string | null) | Media;
   lastLogin: string;
   lastAppAccess: string;
   planExpiryDate?: string | null;
   DaysInARow: number;
   userFirebaseToken?: string | null;
+  lastViewedCommunity?: string | null;
+  AiRememberConversation?: string | null;
   updatedAt: string;
   createdAt: string;
   email: string;
@@ -242,6 +275,9 @@ export interface Notification {
   message?: string | null;
   createdAt: string;
   weeklyMealPlanNotification?: boolean | null;
+  trainingPostNotification?: boolean | null;
+  communityPostNotification?: boolean | null;
+  aiagentNotification?: boolean | null;
   breakfastReminder?: boolean | null;
   lunchReminder?: boolean | null;
   dinnerReminder?: boolean | null;
@@ -284,6 +320,93 @@ export interface MealPlanNotification {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "text-extract-prompts".
+ */
+export interface TextExtractPrompt {
+  id: string;
+  category: string;
+  promptType: 'system' | 'user';
+  content: string;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "meal-suggestions".
+ */
+export interface MealSuggestion {
+  id: string;
+  name: string;
+  user: string | User;
+  isActive?: boolean | null;
+  Breakfasts?:
+    | {
+        proteinIngredients?:
+          | {
+              quantity?: string | null;
+              measureType?: string | null;
+              name: string;
+              id?: string | null;
+            }[]
+          | null;
+        carbohydrateIngredients?:
+          | {
+              quantity?: string | null;
+              measureType?: string | null;
+              name: string;
+              id?: string | null;
+            }[]
+          | null;
+        id?: string | null;
+      }[]
+    | null;
+  Lunches?:
+    | {
+        proteinIngredients?:
+          | {
+              quantity?: string | null;
+              measureType?: string | null;
+              name: string;
+              id?: string | null;
+            }[]
+          | null;
+        carbohydrateIngredients?:
+          | {
+              quantity?: string | null;
+              measureType?: string | null;
+              name: string;
+              id?: string | null;
+            }[]
+          | null;
+        id?: string | null;
+      }[]
+    | null;
+  Dinners?:
+    | {
+        proteinIngredients?:
+          | {
+              quantity?: string | null;
+              measureType?: string | null;
+              name: string;
+              id?: string | null;
+            }[]
+          | null;
+        carbohydrateIngredients?:
+          | {
+              quantity?: string | null;
+              measureType?: string | null;
+              name: string;
+              id?: string | null;
+            }[]
+          | null;
+        id?: string | null;
+      }[]
+    | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "ingredients".
  */
 export interface Ingredient {
@@ -303,6 +426,58 @@ export interface Ingredient {
    */
   description?: string | null;
   isActive?: boolean | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "phase-2-ingredients".
+ */
+export interface Phase2Ingredient {
+  id: string;
+  user: string | User;
+  categories: {
+    categoryName: string;
+    items: {
+      name: string;
+      quantity?: string | null;
+      unit?: string | null;
+      exclude?: boolean | null;
+      id?: string | null;
+    }[];
+    id?: string | null;
+  }[];
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "phase-3-ingredients".
+ */
+export interface Phase3Ingredient {
+  id: string;
+  user: string | User;
+  categories: {
+    categoryName: string;
+    items: {
+      name: string;
+      quantity?: string | null;
+      unit?: string | null;
+      id?: string | null;
+    }[];
+    id?: string | null;
+  }[];
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "metabolic-knowledge-base".
+ */
+export interface MetabolicKnowledgeBase {
+  id: string;
+  fileName: string;
+  fileContent: string;
   updatedAt: string;
   createdAt: string;
 }
@@ -329,6 +504,70 @@ export interface AiPrompt {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "openai-models".
+ */
+export interface OpenaiModel {
+  id: string;
+  /**
+   * The OpenAI model identifier, e.g. "gpt-4o-mini"
+   */
+  modelName: string;
+  /**
+   * Mark this model as the active one used in the app
+   */
+  isActive?: boolean | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "openai-parameters".
+ */
+export interface OpenaiParameter {
+  id: string;
+  /**
+   * The temperature value (e.g., 0.7)
+   */
+  temperature: number;
+  /**
+   * The maximum number of output tokens (e.g., 1000)
+   */
+  maxTokens: number;
+  /**
+   * The top_p value (e.g., 1)
+   */
+  topP: number;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "open-ai-token-usages".
+ */
+export interface OpenAiTokenUsage {
+  id: string;
+  userId: string;
+  userEmail: string;
+  month: string;
+  year: number;
+  tokenUsed: number;
+  monthlyTokenLimit: number;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "chat-threads".
+ */
+export interface ChatThread {
+  id: string;
+  user: string | User;
+  previousResponseId?: string | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "apple-pay-transactions".
  */
 export interface ApplePayTransaction {
@@ -339,18 +578,6 @@ export interface ApplePayTransaction {
   planPeriod?: string | null;
   planExpiryDate?: string | null;
   transactionDate?: string | null;
-  updatedAt: string;
-  createdAt: string;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "apple-product".
- */
-export interface AppleProduct {
-  id: string;
-  productId: string;
-  referenceName: string;
-  subscriptionDuration: string;
   updatedAt: string;
   createdAt: string;
 }
@@ -387,6 +614,7 @@ export interface Handcrafted {
   }[];
   cookingTime: number;
   imagePrompt?: string | null;
+  image?: (string | null) | Media;
   isFavourite?: boolean | null;
   updatedAt: string;
   createdAt: string;
@@ -398,10 +626,8 @@ export interface Handcrafted {
 export interface Comment {
   id: string;
   content: string;
-  author: string | User;
   post: string | Post;
-  likes?: (string | User)[] | null;
-  likesCount?: number | null;
+  user?: (string | User)[] | null;
   updatedAt: string;
   createdAt: string;
 }
@@ -418,8 +644,12 @@ export interface Post {
   /**
    * Likes on this post
    */
-  likeslll?: (string | Like)[] | null;
+  likes?: (string | Like)[] | null;
   commentsCount?: number | null;
+  /**
+   * Comments on this post
+   */
+  comments?: (string | Comment)[] | null;
   updatedAt: string;
   createdAt: string;
 }
@@ -443,6 +673,72 @@ export interface Like {
    */
   isLiked: boolean;
   updatedAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "plans".
+ */
+export interface Plan {
+  id: string;
+  productName: string;
+  productId: string;
+  price: string;
+  currency: string;
+  pricePerWeek: string;
+  discountTag: string;
+  priceId: string;
+  planPeriod: string;
+  description?: string | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "open-ai-vector-file".
+ */
+export interface OpenAiVectorFile {
+  id: string;
+  fileName: string;
+  fileId: string;
+  vectorStoreId: string;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "userplanners".
+ */
+export interface Userplanner {
+  id: string;
+  user: string | User;
+  name: string;
+  planner:
+    | {
+        [k: string]: unknown;
+      }
+    | unknown[]
+    | string
+    | number
+    | boolean
+    | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "categories".
+ */
+export interface Category {
+  id: string;
+  name: string;
+  subcategories?:
+    | {
+        name: string;
+        id?: string | null;
+      }[]
+    | null;
+  updatedAt: string;
+  createdAt: string;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -476,20 +772,52 @@ export interface PayloadLockedDocument {
         value: string | MealPlanNotification;
       } | null)
     | ({
+        relationTo: 'text-extract-prompts';
+        value: string | TextExtractPrompt;
+      } | null)
+    | ({
+        relationTo: 'meal-suggestions';
+        value: string | MealSuggestion;
+      } | null)
+    | ({
         relationTo: 'ingredients';
         value: string | Ingredient;
+      } | null)
+    | ({
+        relationTo: 'phase-2-ingredients';
+        value: string | Phase2Ingredient;
+      } | null)
+    | ({
+        relationTo: 'phase-3-ingredients';
+        value: string | Phase3Ingredient;
+      } | null)
+    | ({
+        relationTo: 'metabolic-knowledge-base';
+        value: string | MetabolicKnowledgeBase;
       } | null)
     | ({
         relationTo: 'ai-prompts';
         value: string | AiPrompt;
       } | null)
     | ({
-        relationTo: 'apple-pay-transactions';
-        value: string | ApplePayTransaction;
+        relationTo: 'openai-models';
+        value: string | OpenaiModel;
       } | null)
     | ({
-        relationTo: 'apple-product';
-        value: string | AppleProduct;
+        relationTo: 'openai-parameters';
+        value: string | OpenaiParameter;
+      } | null)
+    | ({
+        relationTo: 'open-ai-token-usages';
+        value: string | OpenAiTokenUsage;
+      } | null)
+    | ({
+        relationTo: 'chat-threads';
+        value: string | ChatThread;
+      } | null)
+    | ({
+        relationTo: 'apple-pay-transactions';
+        value: string | ApplePayTransaction;
       } | null)
     | ({
         relationTo: 'apple-pay-cancel-subscription';
@@ -510,6 +838,22 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'likes';
         value: string | Like;
+      } | null)
+    | ({
+        relationTo: 'plans';
+        value: string | Plan;
+      } | null)
+    | ({
+        relationTo: 'open-ai-vector-file';
+        value: string | OpenAiVectorFile;
+      } | null)
+    | ({
+        relationTo: 'userplanners';
+        value: string | Userplanner;
+      } | null)
+    | ({
+        relationTo: 'categories';
+        value: string | Category;
       } | null);
   globalSlug?: string | null;
   user: {
@@ -558,8 +902,11 @@ export interface PayloadMigration {
  * via the `definition` "users_select".
  */
 export interface UsersSelect<T extends boolean = true> {
+  role?: T;
   firstName?: T;
   lastName?: T;
+  practitionerName?: T;
+  practitionerEmail?: T;
   currentActivePlan?: T;
   planStatus?: T;
   stripeCustomerID?: T;
@@ -569,6 +916,8 @@ export interface UsersSelect<T extends boolean = true> {
   planExpiryDate?: T;
   DaysInARow?: T;
   userFirebaseToken?: T;
+  lastViewedCommunity?: T;
+  AiRememberConversation?: T;
   updatedAt?: T;
   createdAt?: T;
   email?: T;
@@ -637,6 +986,9 @@ export interface NotificationsSelect<T extends boolean = true> {
   message?: T;
   createdAt?: T;
   weeklyMealPlanNotification?: T;
+  trainingPostNotification?: T;
+  communityPostNotification?: T;
+  aiagentNotification?: T;
   breakfastReminder?: T;
   lunchReminder?: T;
   dinnerReminder?: T;
@@ -677,6 +1029,91 @@ export interface MealPlanNotificationsSelect<T extends boolean = true> {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "text-extract-prompts_select".
+ */
+export interface TextExtractPromptsSelect<T extends boolean = true> {
+  category?: T;
+  promptType?: T;
+  content?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "meal-suggestions_select".
+ */
+export interface MealSuggestionsSelect<T extends boolean = true> {
+  name?: T;
+  user?: T;
+  isActive?: T;
+  Breakfasts?:
+    | T
+    | {
+        proteinIngredients?:
+          | T
+          | {
+              quantity?: T;
+              measureType?: T;
+              name?: T;
+              id?: T;
+            };
+        carbohydrateIngredients?:
+          | T
+          | {
+              quantity?: T;
+              measureType?: T;
+              name?: T;
+              id?: T;
+            };
+        id?: T;
+      };
+  Lunches?:
+    | T
+    | {
+        proteinIngredients?:
+          | T
+          | {
+              quantity?: T;
+              measureType?: T;
+              name?: T;
+              id?: T;
+            };
+        carbohydrateIngredients?:
+          | T
+          | {
+              quantity?: T;
+              measureType?: T;
+              name?: T;
+              id?: T;
+            };
+        id?: T;
+      };
+  Dinners?:
+    | T
+    | {
+        proteinIngredients?:
+          | T
+          | {
+              quantity?: T;
+              measureType?: T;
+              name?: T;
+              id?: T;
+            };
+        carbohydrateIngredients?:
+          | T
+          | {
+              quantity?: T;
+              measureType?: T;
+              name?: T;
+              id?: T;
+            };
+        id?: T;
+      };
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "ingredients_select".
  */
 export interface IngredientsSelect<T extends boolean = true> {
@@ -686,6 +1123,63 @@ export interface IngredientsSelect<T extends boolean = true> {
   metabolicBalanceSubstitute?: T;
   description?: T;
   isActive?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "phase-2-ingredients_select".
+ */
+export interface Phase2IngredientsSelect<T extends boolean = true> {
+  user?: T;
+  categories?:
+    | T
+    | {
+        categoryName?: T;
+        items?:
+          | T
+          | {
+              name?: T;
+              quantity?: T;
+              unit?: T;
+              exclude?: T;
+              id?: T;
+            };
+        id?: T;
+      };
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "phase-3-ingredients_select".
+ */
+export interface Phase3IngredientsSelect<T extends boolean = true> {
+  user?: T;
+  categories?:
+    | T
+    | {
+        categoryName?: T;
+        items?:
+          | T
+          | {
+              name?: T;
+              quantity?: T;
+              unit?: T;
+              id?: T;
+            };
+        id?: T;
+      };
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "metabolic-knowledge-base_select".
+ */
+export interface MetabolicKnowledgeBaseSelect<T extends boolean = true> {
+  fileName?: T;
+  fileContent?: T;
   updatedAt?: T;
   createdAt?: T;
 }
@@ -705,6 +1199,51 @@ export interface AiPromptsSelect<T extends boolean = true> {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "openai-models_select".
+ */
+export interface OpenaiModelsSelect<T extends boolean = true> {
+  modelName?: T;
+  isActive?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "openai-parameters_select".
+ */
+export interface OpenaiParametersSelect<T extends boolean = true> {
+  temperature?: T;
+  maxTokens?: T;
+  topP?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "open-ai-token-usages_select".
+ */
+export interface OpenAiTokenUsagesSelect<T extends boolean = true> {
+  userId?: T;
+  userEmail?: T;
+  month?: T;
+  year?: T;
+  tokenUsed?: T;
+  monthlyTokenLimit?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "chat-threads_select".
+ */
+export interface ChatThreadsSelect<T extends boolean = true> {
+  user?: T;
+  previousResponseId?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "apple-pay-transactions_select".
  */
 export interface ApplePayTransactionsSelect<T extends boolean = true> {
@@ -714,17 +1253,6 @@ export interface ApplePayTransactionsSelect<T extends boolean = true> {
   planPeriod?: T;
   planExpiryDate?: T;
   transactionDate?: T;
-  updatedAt?: T;
-  createdAt?: T;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "apple-product_select".
- */
-export interface AppleProductSelect<T extends boolean = true> {
-  productId?: T;
-  referenceName?: T;
-  subscriptionDuration?: T;
   updatedAt?: T;
   createdAt?: T;
 }
@@ -763,6 +1291,7 @@ export interface HandcraftedSelect<T extends boolean = true> {
       };
   cookingTime?: T;
   imagePrompt?: T;
+  image?: T;
   isFavourite?: T;
   updatedAt?: T;
   createdAt?: T;
@@ -773,10 +1302,8 @@ export interface HandcraftedSelect<T extends boolean = true> {
  */
 export interface CommentsSelect<T extends boolean = true> {
   content?: T;
-  author?: T;
   post?: T;
-  likes?: T;
-  likesCount?: T;
+  user?: T;
   updatedAt?: T;
   createdAt?: T;
 }
@@ -789,8 +1316,9 @@ export interface PostsSelect<T extends boolean = true> {
   author?: T;
   image?: T;
   likesCount?: T;
-  likeslll?: T;
+  likes?: T;
   commentsCount?: T;
+  comments?: T;
   updatedAt?: T;
   createdAt?: T;
 }
@@ -804,6 +1332,60 @@ export interface LikesSelect<T extends boolean = true> {
   createdAt?: T;
   isLiked?: T;
   updatedAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "plans_select".
+ */
+export interface PlansSelect<T extends boolean = true> {
+  productName?: T;
+  productId?: T;
+  price?: T;
+  currency?: T;
+  pricePerWeek?: T;
+  discountTag?: T;
+  priceId?: T;
+  planPeriod?: T;
+  description?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "open-ai-vector-file_select".
+ */
+export interface OpenAiVectorFileSelect<T extends boolean = true> {
+  fileName?: T;
+  fileId?: T;
+  vectorStoreId?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "userplanners_select".
+ */
+export interface UserplannersSelect<T extends boolean = true> {
+  user?: T;
+  name?: T;
+  planner?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "categories_select".
+ */
+export interface CategoriesSelect<T extends boolean = true> {
+  name?: T;
+  subcategories?:
+    | T
+    | {
+        name?: T;
+        id?: T;
+      };
+  updatedAt?: T;
+  createdAt?: T;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -836,6 +1418,26 @@ export interface PayloadMigrationsSelect<T extends boolean = true> {
   batch?: T;
   updatedAt?: T;
   createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "token-settings".
+ */
+export interface TokenSetting {
+  id: string;
+  monthlyTokenLimit: number;
+  updatedAt?: string | null;
+  createdAt?: string | null;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "token-settings_select".
+ */
+export interface TokenSettingsSelect<T extends boolean = true> {
+  monthlyTokenLimit?: T;
+  updatedAt?: T;
+  createdAt?: T;
+  globalType?: T;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema

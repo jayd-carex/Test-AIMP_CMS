@@ -44,6 +44,21 @@ export const Notifications: CollectionConfig = {
       required: false,
     },
     {
+      name: 'trainingPostNotification',
+      type: 'checkbox',
+      required: false,
+    },
+    {
+      name: 'communityPostNotification',
+      type: 'checkbox',
+      required: false,
+    },
+    {
+      name: 'aiagentNotification',
+      type: 'checkbox',
+      required: false,
+    },
+    {
       name: 'breakfastReminder',
       type: 'checkbox',
       required: false,

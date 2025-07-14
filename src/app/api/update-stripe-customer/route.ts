@@ -1,19 +1,23 @@
 // /api/stripe-update-customer/route.ts
 import { NextResponse } from 'next/server'
-import Stripe from 'stripe'
+// import Stripe from 'stripe'
 
-const stripeSecretKey = process.env.STRIPE_SECRET_KEY
-if (!stripeSecretKey) {
-  throw new Error('STRIPE_SECRET_KEY is missing in environment variables!')
-}
+// const stripeSecretKey = process.env.STRIPE_SECRET_KEY
+// if (!stripeSecretKey) {
+//   throw new Error('STRIPE_SECRET_KEY is missing in environment variables!')
+// }
 
-const stripe = new Stripe(stripeSecretKey)
+// const stripe = new Stripe(stripeSecretKey)
 
 export async function POST(req: Request) {
+  const Stripe = (await import('stripe')).default
+  const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
+    apiVersion: '2023-10-16',
+  })
   try {
     const { customerId, firstName, lastName, email } = await req.json()
 
-    // Update the customer information
+    // Update the customer information...
     const updatedCustomer = await stripe.customers.update(customerId, {
       name: `${firstName} ${lastName}`,
       email: email,
